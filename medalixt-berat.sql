@@ -1,0 +1,2 @@
+ALTER TABLE players
+ADD COLUMN maxweight INT DEFAULT 50000;
