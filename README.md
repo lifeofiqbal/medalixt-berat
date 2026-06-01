@@ -1,0 +1,16 @@
+MEMBUAT BERAT INVENTORY UNTUK MASING MASING PLAYER
+
+# INSTALL
+ensure medalixt-berat
+add_ace group.admin command.setweight allow
+
+# SQL (MASUKKAN KE DATABASE)
+ALTER TABLE players
+ADD COLUMN maxweight INT DEFAULT 30000;
+
+# CARA PAKAI
+/setweight 5 100 -- Artinya player ID 5 jadi 100 KG.
+
+ISI DARI server.lua BISA JUGA DI LETAKKAN LANGSUNG DI ox_inventory/server.lua AGAR TIDAK MEMAKAN RESOURCE BANYAK
+
+INI DI BUAT HANYA UNTUK SAYA AGAR TIDAK LUPA :v
