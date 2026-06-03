@@ -1,18 +1,38 @@
 -- cl_setweight.lua
+-- Dioptimasi: thread ESC hanya aktif saat panel terbuka
+
 local isOpen = false
 
--- Qbox/QBCore: trigger saat player sudah fully loaded
+-- ─────────────────────────────────────────────
+-- Load custom weight saat player ready
+-- ─────────────────────────────────────────────
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
-    Citizen.Wait(2000) -- tunggu ox_inventory selesai load inventory
+    Citizen.Wait(2000)
     TriggerServerEvent("medalixt_berat:playerReady")
 end)
 
--- Jaga-jaga: trigger juga saat resource restart
 AddEventHandler("onClientResourceStart", function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     Citizen.Wait(3000)
     TriggerServerEvent("medalixt_berat:playerReady")
 end)
+
+-- ─────────────────────────────────────────────
+-- ESC handler: thread hanya spawn saat panel buka,
+-- otomatis mati saat panel tutup → 0 overhead saat idle
+-- ─────────────────────────────────────────────
+local function startEscListener()
+    Citizen.CreateThread(function()
+        while isOpen do
+            Citizen.Wait(100) -- cek 10x/detik, cukup responsif & hemat CPU
+            if IsControlJustReleased(0, 200) then
+                isOpen = false
+                SetNuiFocus(false, false)
+                SendNUIMessage({ action = "closePanel" })
+            end
+        end
+    end)
+end
 
 -- ─────────────────────────────────────────────
 -- Panel admin
@@ -25,6 +45,7 @@ RegisterNetEvent("medalixt_berat:receivePlayerList", function(players)
     isOpen = true
     SetNuiFocus(true, true)
     SendNUIMessage({ action = "openPanel", players = players })
+    startEscListener() -- spawn thread hanya saat ini
 end)
 
 RegisterNetEvent("medalixt_berat:callback", function(success, nameOrErr, weight)
@@ -49,16 +70,4 @@ end)
 RegisterNUICallback("refreshPlayers", function(data, cb)
     TriggerServerEvent("medalixt_berat:openPanel")
     cb("ok")
-end)
-
--- Tutup dengan ESC
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-        if isOpen and IsControlJustReleased(0, 200) then
-            isOpen = false
-            SetNuiFocus(false, false)
-            SendNUIMessage({ action = "closePanel" })
-        end
-    end
 end)
