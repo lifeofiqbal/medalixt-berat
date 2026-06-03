@@ -108,11 +108,13 @@ RegisterNetEvent("medalixt_berat:playerReady", function()
 
     loadWeight(src, function(result)
         if result then
-            Citizen.Wait(1500)
-            if GetPlayerName(src) then
-                applyWeight(src, result)
-                print(("[medalixt_berat] Loaded: %s (ID:%d) = %d gram"):format(name, src, result))
-            end
+            -- SetTimeout aman dipakai di dalam MySQL callback (tidak butuh coroutine)
+            SetTimeout(1500, function()
+                if GetPlayerName(src) then
+                    applyWeight(src, result)
+                    print(("[medalixt_berat] Loaded: %s (ID:%d) = %d gram"):format(name, src, result))
+                end
+            end)
         else
             print(("[medalixt_berat] Tidak ada custom weight untuk: %s"):format(tostring(name)))
         end
